@@ -22,8 +22,10 @@ linkedin_username: drumit
 # about_title: About Me
 about_profile_image: images/profile.jpg
 about_content: | # this will include new lines to allow paragraphs
-Hi, my name's Anatoli and I'm a Linux system administrator. My experience in IT for over 10 years. Also, I spend my free time on pentest, on the HackTheBox site (this is a hobby), also, I have a little experience with GIT, CircleCI, Github Action, Amazon, Docker, Terraform, Ansible, Grafana and Datadog - tools that are often used by the DevOps Engineer. I have worked for several international companies. - AlliedTesting and Helium10. At AlliedTesting, I have an incredible experience of interacting with development and testing teams. My responsibilities were to maintain high security standards on the project, I also implemented Linux in the company, and integrated it into the infrastructure, taking into account all the company's standards. Also, I have been doing virtualization and containerization. I am most skilled in Linux and automation. I am happy when everything is standardized in the company on all steps and all policies are followed, this helps to avoid confusion and violations.
+  Hi, my name's Anatoli and I'm a Linux system administrator. My experience in IT for over 10 years. Also, I spend my free time on pentest, on the HackTheBox site (this is a hobby), also, I have a little experience with GIT, CircleCI, Github Action, Amazon, Docker, Terraform, Ansible, Grafana and Datadog - tools that are often used by the DevOps Engineer. I have worked for several international companies. - AlliedTesting and Helium10. At AlliedTesting, I have an incredible experience of interacting with development and testing teams. My responsibilities were to maintain high security standards on the project, I also implemented Linux in the company, and integrated it into the infrastructure, taking into account all the company's standards. Also, I have been doing virtualization and containerization. I am most skilled in Linux and automation.
 
+  I am happy when everything is standardized in the company on all steps and all policies are followed, this helps to avoid confusion and violations.
+content:
   - title: Experience 
     layout: list  # Type of content section (list/text)
     content:

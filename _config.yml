@@ -53,16 +53,24 @@ content:
         link: https://www.helium10.com
         sub_title: DevOps Engineer
         caption: Jul 2021 - Oct 2021
-        quote: I was involved in maintaining infrastructure, adding projects to amazon, configuring docker containers and monitoring
+        quote: I was involved in maintaining infrastructure, adding projects to Amazon, with Terraform and Git, and CircleCI, also configuring docker containers and Datadog monitoring
       - layout: left
         title: AlliedTesting
         link: https://www.alliedtesting.com
         sub_title: Systems Administrator
         caption: Jul 2019 - Jul 2021
         quote: I administered systems, created and solved tasks, maintained infrastructure, implemented Linux, monitored compliance with security policies
-
-
-
+      - layout: left
+        title: Active Computers
+        link: https://www.acomps.ru
+        caption: Mart 2017 - Jul 2019
+        sub_title: Support Engineer | System Administrator
+        quote: Support multiple clients and infrastructure in integrator company, Moscow
+      - layout: left
+        title: Court Department
+        link: http://suddep.gospmr.org
+        sub_title: Head of IT and System Engineer
+        quite: Build and support Windows and Linux infrastructure, manage IT Department
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
     content:
@@ -70,6 +78,10 @@ content:
         title: Pridnestrovian State University
         caption: 2015 - 2020
         sub_title: Faculty Physicals and Mathematics
+      - layout: left
+        title: Zaoksky Adventist University
+        caption: 2004 - 2007
+        sub_title: Faculty of Theology
 
   - title: A Little More About Me
     layout: text

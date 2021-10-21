@@ -37,13 +37,6 @@ about_content: | # this will include new lines to allow paragraphs
         quote: >
         I was involved in maintaining infrastructure, adding projects to amazon, configuring docker containers and monitoring
 
-       # title: AlliedTesting
-       # link: https://www.alliedtesting.com
-       # sub_title: Systems Administrator
-       # caption: Jul 2019 - Jul 2021
-       # quote: >
-       # I administered systems, created and solved tasks, maintained infrastructure, implemented Linux, monitored compliance with security policies
-
   - title: Education # Title for the section
     layout: list # Type of content section (list/text)
     content:

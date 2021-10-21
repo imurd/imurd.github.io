@@ -26,17 +26,17 @@ about_content: | # this will include new lines to allow paragraphs
 
   I am happy when everything is standardized in the company on all steps and all policies are followed, this helps to avoid confusion and violations.
 content:
- - title: Projects # Title for the section
-        layout: list # Type of content section (list/text)
-        content:
-          - layout: top-middle
-            title: Super awesome project
-            link: github.com
-            # link_text: Project Website
-            additional_links:
-              - title: sproogen/modern-resume-theme
-                icon: fab fa-github
-                url: github.com/sproogen/modern-resume-theme
+  - title: Projects # Title for the section
+    layout: list # Type of content section (list/text)
+    content:
+      - layout: top-middle
+        title: Super awesome project
+        link: github.com
+       # link_text: Project Website
+        additional_links:
+          - title: sproogen/modern-resume-theme
+            icon: fab fa-github
+            url: github.com/sproogen/modern-resume-theme
               # - title:  Github page for project (eg. sproogen/modern-resume-theme)
               #   icon: fab fa-github
               #   url: Link to project (eg. sproogen.github.io/modern-resume-theme)
@@ -54,18 +54,18 @@ content:
         sub_title: DevOps Engineer
         caption: Jul 2021 - Oct 2021
         quote: >
-        I was involved in maintaining infrastructure, adding projects to amazon, configuring docker containers and monitoring
+           I was involved in maintaining infrastructure, adding projects to amazon, configuring docker containers and monitoring
       - layout: left
         title: AlliedTesting
         link: https://www.alliedtesting.com
         sub_title: Systems Administrator
         caption: Jul 2019 - Jul 2021
         quote: >
-        I administered systems, created and solved tasks, maintained infrastructure, implemented Linux, monitored compliance with security policies
+           I administered systems, created and solved tasks, maintained infrastructure, implemented Linux, monitored compliance with security policies
 
 
 
-- title: Education # Title for the section
+  - title: Education # Title for the section
     layout: list # Type of content section (list/text)
     content:
       - layout: left

@@ -53,15 +53,13 @@ content:
         link: https://www.helium10.com
         sub_title: DevOps Engineer
         caption: Jul 2021 - Oct 2021
-        quote: >
-           I was involved in maintaining infrastructure, adding projects to amazon, configuring docker containers and monitoring
+        quote: I was involved in maintaining infrastructure, adding projects to amazon, configuring docker containers and monitoring
       - layout: left
         title: AlliedTesting
         link: https://www.alliedtesting.com
         sub_title: Systems Administrator
         caption: Jul 2019 - Jul 2021
-        quote: >
-           I administered systems, created and solved tasks, maintained infrastructure, implemented Linux, monitored compliance with security policies
+        quote: I administered systems, created and solved tasks, maintained infrastructure, implemented Linux, monitored compliance with security policies
 
 
 

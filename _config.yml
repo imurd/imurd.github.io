@@ -45,10 +45,10 @@ about_content: | # this will include new lines to allow paragraphs
   I am most skilled in: Linux and automation.  I am happy when everything is standardized in the company on all steps and all policies are followed, this helps to avoid confusion and violations.
 
 content:
-  - title: Projects # Title for the section
-    layout: list # Type of content section (list/text)
-    content:
-      - layout: top-middle
+#  - title: Projects # Title for the section
+#    layout: list # Type of content section (list/text)
+#    content:
+#      - layout: top-middle
 #        title: Super awesome project
 #        link: github.com/sproogen
 #        # link_text: Project Website

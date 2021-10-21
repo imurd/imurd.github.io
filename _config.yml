@@ -27,7 +27,7 @@ about_content: | # this will include new lines to allow paragraphs
   I am most skilled in: Linux and automation.  I am happy when everything is standardized in the company on all steps and all policies are followed, this helps to avoid confusion and violations.
 
   - title: Experience 
-    layout: list # Type of content section (list/text)
+    layout: text  # Type of content section (list/text)
     content:
       - layout: left
         title: Helium10

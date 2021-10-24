@@ -13,6 +13,8 @@ darkmode: never
 github_username: imurd
 instagram_username: imurd87
 linkedin_username: drumit
+print: print
+save_to_pdf: save
 # About Section
 # about_title: About Me
 about_profile_image: images/profile.jpg

@@ -17,7 +17,7 @@ linkedin_username: drumit
 # Additional icon links
 additional_links:
 - title: PDF
-  icon: https://fontawesome.com/v5.15/icons/arrow-alt-circle-down?style=regular
+  icon: https://imurd.github.io/images/pdf.jpg
   url: https://imurd.github.io/pdf/DevOps_Anatoli_Drumi.pdf
 
 # About Section

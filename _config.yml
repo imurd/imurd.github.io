@@ -24,8 +24,8 @@ additional_links:
 # about_title: About Me
 about_profile_image: images/profile.jpg
 about_content: | # this will include new lines to allow paragraphs
-  Hi, my name's Anatoli. My experience in IT for over 10 years. I'm a Linux system administrator. Also, I spend my free time on pentest, on the HackTheBox site (this is a hobby), also, I have a little experience with Git, 
-  CircleCI, Github Action, Amazon, Docker, Terraform, Ansible, Grafana and Datadog - tools that are often used by the DevOps Engineer. I have worked for several international companies - AlliedTesting and Helium10. At AlliedTesting, I have an incredible experience of interacting with development and testing teams. My responsibilities were to maintain high security standards on the project, I also implemented Linux in the company, and integrated it into the infrastructure, taking into account all the company's standards. Also, I have been doing virtualization and containerization. I am most skilled in Linux and automation.
+  Hi, my name's Anatoli. My experience in IT for over 10 years. I'm a Linux system administrator. Also, I spend my free time on pentest, on the HackTheBox site (this is a hobby), also, I have some experience with Git, 
+  CircleCI, Github Action, Amazon, Docker, Terraform, Ansible, Grafana and Datadog - tools that are often used by the DevOps Engineer. I have worked for several international companies - AlliedTesting and Helium10. At AlliedTesting, I have an incredible experience of interacting with development and testing teams. My responsibilities were to maintain high security standards on the project. Also, I have been doing virtualization and containerization. I am most skilled in Linux and automation.
 
   I am happy when everything is standardized in the company on all steps and all policies are followed, this helps to avoid confusion and violations.
 content:
@@ -37,13 +37,13 @@ content:
         link: https://www.helium10.com
         sub_title: DevOps Engineer
         caption: Jul 2021 - Oct 2021
-        quote: I was involved in maintaining infrastructure, adding projects to Amazon, with Terraform and Git, and CircleCI, also, I created docker containers for developer environment that is identical to prod. environment. This helped not to "clog" the user's working machine with a large number of different versions of the same software. Also I am did dashboard with SLO in Datadog for monitoring our websites, and monitoring docker containers
+        quote: I was involved in maintaining infrastructure, adding projects to Amazon, with Terraform and Git, and CircleCI, also, I created docker containers for developer environment that is identical to prod. environment. This helped not to "clog" the user's working machine with a large number of different versions of the same software. Also I did dashboard with SLO in Datadog for monitoring our websites, and monitoring docker containers
       - layout: left
         title: AlliedTesting
         link: https://www.alliedtesting.com
         sub_title: Systems Administrator
         caption: Jul 2019 - Jul 2021
-        quote: I administered systems, created and solved tasks, maintained infrastructure, one of the my biggest projects was migration desktop OSs to Linux maintaining compatibility with the existing company policies and standards, it is enabling company flexibility and savings on the OS initial and ongoing costs. Also for good economy and high security, I created and maintained 2 Proxmox clusters with CI / CD. Also, I did documentation on the allowed software on projects. and regularly participated in zoom conferences, where he regularly trained and contributed to the training of colleagues
+        quote: I administered systems, created and solved tasks, maintained infrastructure, one of the my biggest projects was migration desktop OSs to Linux maintaining compatibility with the existing company policies and standards, it is enabling company flexibility and savings on the OS initial and ongoing costs. Also for good economy and high security, I created and maintained 2 Proxmox clusters with CI / CD. Also, I did documentation on the allowed software on projects and regularly participated in zoom conferences, where regularly trained and contributed to the training of colleagues
       - layout: left
         title: Active Computers
         link: https://www.acomps.ru

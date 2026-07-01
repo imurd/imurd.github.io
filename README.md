@@ -34,7 +34,11 @@ create table recipients (
 create table visits (
   id bigint generated always as identity primary key,
   token text,
+  ip text,
+  city text,
+  region text,
   country text,
+  isp text,
   user_agent text,
   referrer text,
   visited_at timestamptz default now()

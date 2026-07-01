@@ -27,8 +27,10 @@
   }
   if (!token) token = "anon-" + Math.random().toString(36).slice(2, 10);
 
-  // 2. Гео по IP (бесплатно, без ключа)
-  function logVisit(country) {
+  // 2. Гео по IP (бесплатно, без ключа): IP, город, регион, страна, провайдер
+  function logVisit(geo) {
+    geo = geo || {};
+    var conn = geo.connection || {};
     fetch(C.SUPABASE_URL + "/rest/v1/visits", {
       method: "POST",
       headers: {
@@ -39,7 +41,11 @@
       },
       body: JSON.stringify({
         token: token,
-        country: country || null,
+        ip: geo.ip || null,
+        city: geo.city || null,
+        region: geo.region || null,
+        country: geo.country || null,
+        isp: conn.isp || conn.org || null,
         user_agent: navigator.userAgent,
         referrer: document.referrer || null
       })
@@ -48,6 +54,6 @@
 
   fetch("https://ipwho.is/")
     .then(function (r) { return r.json(); })
-    .then(function (d) { logVisit(d && d.country ? d.country : null); })
+    .then(function (d) { logVisit(d && d.success !== false ? d : null); })
     .catch(function () { logVisit(null); });
 })();

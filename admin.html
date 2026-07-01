@@ -21,7 +21,7 @@
 <button id="load">Показать</button>
 
 <table id="tbl" style="display:none"><thead>
-  <tr><th>#</th><th>Имя</th><th>Email</th><th>Пол</th><th>Страна</th><th>Первый переход</th><th>Последний переход</th><th>Кол-во переходов</th></tr>
+  <tr><th>#</th><th>Имя</th><th>Email</th><th>Пол</th><th>IP</th><th>Город</th><th>Регион</th><th>Страна</th><th>Провайдер</th><th>Первый переход</th><th>Последний переход</th><th>Кол-во</th></tr>
 </thead><tbody></tbody></table>
 <div class="muted" id="msg" style="margin-top:12px"></div>
 
@@ -37,7 +37,7 @@ document.getElementById("load").onclick = async function () {
   try {
     var [recRes, visRes] = await Promise.all([
       fetch(C.SUPABASE_URL + "/rest/v1/recipients?select=token,name,email,gender", { headers: h }),
-      fetch(C.SUPABASE_URL + "/rest/v1/visits?select=token,country,visited_at&order=visited_at.asc", { headers: h })
+      fetch(C.SUPABASE_URL + "/rest/v1/visits?select=token,ip,city,region,country,isp,visited_at&order=visited_at.asc", { headers: h })
     ]);
     var recipients = await recRes.json(), visits = await visRes.json();
     var byToken = {};
@@ -48,7 +48,12 @@ document.getElementById("load").onclick = async function () {
       row.count++;
       if (!row.first) row.first = v.visited_at;
       row.last = v.visited_at;
+      // берём последние известные значения
+      if (v.ip) row.ip = v.ip;
+      if (v.city) row.city = v.city;
+      if (v.region) row.region = v.region;
       if (v.country) row.country = v.country;
+      if (v.isp) row.isp = v.isp;
     });
 
     // только те, кто реально переходил, сортировка по первому переходу
@@ -59,8 +64,9 @@ document.getElementById("load").onclick = async function () {
     list.forEach((r, i) => {
       var tr = document.createElement("tr");
       tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + r.name + "</td><td>" + r.email +
-        "</td><td>" + r.gender + "</td><td>" + (r.country || "—") + "</td><td>" + fmt(r.first) +
-        "</td><td>" + fmt(r.last) + "</td><td>" + r.count + "</td>";
+        "</td><td>" + r.gender + "</td><td>" + (r.ip || "—") + "</td><td>" + (r.city || "—") +
+        "</td><td>" + (r.region || "—") + "</td><td>" + (r.country || "—") + "</td><td>" + (r.isp || "—") +
+        "</td><td>" + fmt(r.first) + "</td><td>" + fmt(r.last) + "</td><td>" + r.count + "</td>";
       tbody.appendChild(tr);
     });
     document.getElementById("tbl").style.display = "table";

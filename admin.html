@@ -36,8 +36,14 @@
 <p class="muted">Сгруппировано по IP. Вставь <b>service_role</b> ключ — он не сохраняется в коде, только в этой вкладке.</p>
 <div class="bar">
   <input id="key" type="password" placeholder="service_role key (начинается на eyJ…)">
+  <label class="muted" style="display:flex;align-items:center;gap:6px;white-space:nowrap"><input type="checkbox" id="remember"> запомнить в этом браузере</label>
   <button id="load">Показать</button>
   <button id="csv" class="sec" style="display:none">Скачать CSV</button>
+</div>
+<div class="bar">
+  <input id="pwd" type="password" placeholder="или временный пароль (если ключ сохранён в этом браузере)">
+  <button id="loadpwd" class="sec">Войти по паролю</button>
+  <button id="forget" class="sec" style="display:none">Забыть ключ</button>
 </div>
 <div class="muted" id="msg"></div>
 <div class="cards" id="cards"></div>
@@ -60,8 +66,11 @@ var FIELDS = [
 var keep = FIELDS.map(f=>f[0]);
 var lastList = [];
 
-document.getElementById("load").onclick = async function(){
-  var C = window.CONFIG, key = document.getElementById("key").value.trim() || C.SUPABASE_ANON_KEY;
+var PASS = "q12q12q12", LS = "imurd_svc_key";
+if (localStorage.getItem(LS)) document.getElementById("forget").style.display = "inline-block";
+
+async function loadReport(key){
+  var C = window.CONFIG;
   var msg = document.getElementById("msg"); msg.textContent = "Загрузка...";
   var h = { "apikey":key, "Authorization":"Bearer "+key };
   var sel = "token,ip,"+keep.join(",")+",vpn_suspect,visited_at";
@@ -106,6 +115,28 @@ document.getElementById("load").onclick = async function(){
     document.getElementById("csv").style.display = "inline-block";
     msg.textContent = "Уникальных IP: "+lastList.length+" · всего переходов: "+visits.length;
   } catch(e){ msg.textContent = "Ошибка: "+e; }
+}
+
+document.getElementById("load").onclick = function(){
+  var key = document.getElementById("key").value.trim();
+  if(!key){ document.getElementById("msg").textContent = "Вставь service_role ключ."; return; }
+  if(document.getElementById("remember").checked){
+    localStorage.setItem(LS, key);
+    document.getElementById("forget").style.display = "inline-block";
+  }
+  loadReport(key);
+};
+document.getElementById("loadpwd").onclick = function(){
+  var msg = document.getElementById("msg");
+  if(document.getElementById("pwd").value !== PASS){ msg.textContent = "Неверный пароль."; return; }
+  var key = localStorage.getItem(LS);
+  if(!key){ msg.textContent = "В этом браузере ключ ещё не сохранён. Один раз вставь service_role ключ с галочкой «запомнить», потом входи паролем."; return; }
+  loadReport(key);
+};
+document.getElementById("forget").onclick = function(){
+  localStorage.removeItem(LS);
+  document.getElementById("forget").style.display = "none";
+  document.getElementById("msg").textContent = "Ключ удалён из этого браузера.";
 };
 
 document.getElementById("csv").onclick = function(){

@@ -5,13 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Отчёт по переходам</title>
 <style>
-  body { font-family:-apple-system,"Segoe UI",Roboto,sans-serif; max-width:1000px; margin:0 auto; padding:24px; background:#0f172a; color:#e2e8f0; }
+  body { font-family:-apple-system,"Segoe UI",Roboto,sans-serif; max-width:1400px; margin:0 auto; padding:24px; background:#0f172a; color:#e2e8f0; }
   h1 { font-size:22px; } input { padding:10px; border-radius:8px; border:1px solid #334155; background:#1e293b; color:#e2e8f0; width:100%; max-width:520px; }
   button { margin-left:8px; padding:10px 18px; border:0; border-radius:8px; background:#38bdf8; color:#0f172a; font-weight:600; cursor:pointer; }
-  table { width:100%; border-collapse:collapse; margin-top:20px; font-size:14px; }
-  th,td { border:1px solid #334155; padding:9px; text-align:left; }
-  th { background:#1e293b; } tr:nth-child(even) td { background:#16233b; }
+  .scroll { overflow-x:auto; margin-top:20px; }
+  table { border-collapse:collapse; font-size:13px; white-space:nowrap; }
+  th,td { border:1px solid #334155; padding:8px; text-align:left; }
+  th { background:#1e293b; position:sticky; top:0; } tr:nth-child(even) td { background:#16233b; }
   .muted { color:#94a3b8; font-size:13px; }
+  .flag { color:#f87171; font-weight:600; }
 </style>
 </head>
 <body>
@@ -19,59 +21,87 @@
 <p class="muted">Вставь <b>service_role</b> ключ (Settings → API). Он не сохраняется в коде — только в этой вкладке.</p>
 <input id="key" type="password" placeholder="service_role key">
 <button id="load">Показать</button>
+<button id="csv" style="display:none;background:#334155;color:#e2e8f0">Скачать CSV</button>
 
+<div class="scroll">
 <table id="tbl" style="display:none"><thead>
-  <tr><th>#</th><th>Имя</th><th>Email</th><th>Пол</th><th>IP</th><th>Город</th><th>Регион</th><th>Страна</th><th>Провайдер</th><th>Первый переход</th><th>Последний переход</th><th>Кол-во</th></tr>
+  <tr><th>#</th><th>Имя</th><th>Email</th><th>Пол</th><th>IP</th><th>VPN?</th><th>Город</th><th>Регион</th><th>Страна</th>
+      <th>Провайдер</th><th>ASN</th><th>Домен</th><th>ОС</th><th>Браузер</th><th>Устройство</th>
+      <th>Экран</th><th>Окно</th><th>Пояс (браузер)</th><th>Пояс (IP)</th><th>Языки</th><th>Ядра</th><th>ОЗУ</th>
+      <th>Сеть</th><th>DNT</th><th>Источник</th><th>Первый</th><th>Последний</th><th>Кол-во</th></tr>
 </thead><tbody></tbody></table>
+</div>
 <div class="muted" id="msg" style="margin-top:12px"></div>
 
 <script src="config.js"></script>
 <script>
 function fmt(ts) { if (!ts) return "—"; var d = new Date(ts); return d.toLocaleString("ru-RU"); }
+function esc(s) { return (s == null ? "—" : String(s)).replace(/[&<>]/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
+var COLS = ["#","name","email","gender","ip","vpn","city","region","country","isp","asn","domain","os","browser","device_type","screen","viewport","timezone","tz_ip","languages","cpu_cores","device_memory","connection","dnt","referrer","first","last","count"];
+var lastList = [];
 
 document.getElementById("load").onclick = async function () {
   var C = window.CONFIG, key = document.getElementById("key").value.trim() || C.SUPABASE_ANON_KEY;
   var msg = document.getElementById("msg"); msg.textContent = "Загрузка...";
   var h = { "apikey": key, "Authorization": "Bearer " + key };
+  var sel = "token,ip,city,region,country,isp,asn,org,domain,os,browser,device_type,screen,viewport,timezone,tz_ip,languages,cpu_cores,device_memory,connection,dnt,vpn_suspect,referrer,visited_at";
 
   try {
     var [recRes, visRes] = await Promise.all([
       fetch(C.SUPABASE_URL + "/rest/v1/recipients?select=token,name,email,gender", { headers: h }),
-      fetch(C.SUPABASE_URL + "/rest/v1/visits?select=token,ip,city,region,country,isp,visited_at&order=visited_at.asc", { headers: h })
+      fetch(C.SUPABASE_URL + "/rest/v1/visits?select=" + sel + "&order=visited_at.asc", { headers: h })
     ]);
     var recipients = await recRes.json(), visits = await visRes.json();
-    var byToken = {};
-    recipients.forEach(r => byToken[r.token] = { name: r.name, email: r.email, gender: r.gender, count: 0 });
+    if (!Array.isArray(visits)) { msg.textContent = "Ошибка доступа (нужен service_role ключ): " + JSON.stringify(visits); return; }
+    // токен -> получатель (для имени, если переход был по персональной ссылке)
+    var recMap = {};
+    recipients.forEach(r => recMap[r.token] = r);
 
+    var keep = ["ip","city","region","country","isp","asn","domain","os","browser","device_type","screen","viewport","timezone","tz_ip","languages","cpu_cores","device_memory","connection","dnt","referrer"];
+    // ГРУППИРОВКА ПО IP: один IP = одна строка, count = число визитов
+    var byIp = {};
     visits.forEach(v => {
-      var row = byToken[v.token] || (byToken[v.token] = { name: "(неизвестный)", email: "—", gender: "—", count: 0 });
+      var groupKey = v.ip || v.token || "unknown";
+      var row = byIp[groupKey] || (byIp[groupKey] = { name: "(аноним)", email: "—", gender: "—", count: 0 });
       row.count++;
       if (!row.first) row.first = v.visited_at;
       row.last = v.visited_at;
-      // берём последние известные значения
-      if (v.ip) row.ip = v.ip;
-      if (v.city) row.city = v.city;
-      if (v.region) row.region = v.region;
-      if (v.country) row.country = v.country;
-      if (v.isp) row.isp = v.isp;
+      keep.forEach(k => { if (v[k] != null && v[k] !== "") row[k] = v[k]; });
+      if (v.vpn_suspect) row.vpn = "ДА";
+      var rec = recMap[v.token];
+      if (rec) { row.name = rec.name; row.email = rec.email; row.gender = rec.gender; }
     });
 
-    // только те, кто реально переходил, сортировка по первому переходу
-    var list = Object.values(byToken).filter(r => r.count > 0)
+    lastList = Object.values(byIp).filter(r => r.count > 0)
       .sort((a, b) => new Date(a.first) - new Date(b.first));
 
     var tbody = document.querySelector("#tbl tbody"); tbody.innerHTML = "";
-    list.forEach((r, i) => {
+    lastList.forEach((r, i) => {
       var tr = document.createElement("tr");
-      tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + r.name + "</td><td>" + r.email +
-        "</td><td>" + r.gender + "</td><td>" + (r.ip || "—") + "</td><td>" + (r.city || "—") +
-        "</td><td>" + (r.region || "—") + "</td><td>" + (r.country || "—") + "</td><td>" + (r.isp || "—") +
+      var vpnCell = r.vpn ? "<span class='flag'>ДА</span>" : "—";
+      tr.innerHTML =
+        "<td>" + (i + 1) + "</td><td>" + esc(r.name) + "</td><td>" + esc(r.email) + "</td><td>" + esc(r.gender) +
+        "</td><td>" + esc(r.ip) + "</td><td>" + vpnCell + "</td><td>" + esc(r.city) + "</td><td>" + esc(r.region) +
+        "</td><td>" + esc(r.country) + "</td><td>" + esc(r.isp) + "</td><td>" + esc(r.asn) + "</td><td>" + esc(r.domain) +
+        "</td><td>" + esc(r.os) + "</td><td>" + esc(r.browser) + "</td><td>" + esc(r.device_type) +
+        "</td><td>" + esc(r.screen) + "</td><td>" + esc(r.viewport) + "</td><td>" + esc(r.timezone) + "</td><td>" + esc(r.tz_ip) +
+        "</td><td>" + esc(r.languages) + "</td><td>" + esc(r.cpu_cores) + "</td><td>" + esc(r.device_memory) +
+        "</td><td>" + esc(r.connection) + "</td><td>" + esc(r.dnt) + "</td><td>" + esc(r.referrer) +
         "</td><td>" + fmt(r.first) + "</td><td>" + fmt(r.last) + "</td><td>" + r.count + "</td>";
       tbody.appendChild(tr);
     });
     document.getElementById("tbl").style.display = "table";
-    msg.textContent = "Всего перешедших: " + list.length;
+    document.getElementById("csv").style.display = "inline-block";
+    msg.textContent = "Всего перешедших: " + lastList.length;
   } catch (e) { msg.textContent = "Ошибка: " + e; }
+};
+
+document.getElementById("csv").onclick = function () {
+  var head = ["#","Имя","Email","Пол","IP","VPN","Город","Регион","Страна","Провайдер","ASN","Домен","ОС","Браузер","Устройство","Экран","Окно","Пояс(браузер)","Пояс(IP)","Языки","Ядра","ОЗУ","Сеть","DNT","Источник","Первый","Последний","Кол-во"];
+  var rows = lastList.map((r, i) => [i+1, r.name, r.email, r.gender, r.ip, r.vpn||"", r.city, r.region, r.country, r.isp, r.asn, r.domain, r.os, r.browser, r.device_type, r.screen, r.viewport, r.timezone, r.tz_ip, r.languages, r.cpu_cores, r.device_memory, r.connection, r.dnt, r.referrer, r.first, r.last, r.count]);
+  var csv = [head].concat(rows).map(row => row.map(c => '"' + String(c==null?"":c).replace(/"/g,'""') + '"').join(",")).join("\r\n");
+  var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+  var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "visits.csv"; a.click();
 };
 </script>
 </body>

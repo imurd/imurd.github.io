@@ -1,74 +1,38 @@
 # Резюме-лендинг с трекингом переходов
 
 Статический сайт для **авторизованного** security awareness / phishing-тестирования.
-Лендинг маскируется под резюме сисадмина/DevOps, а в фоне логирует, кто перешёл по
-персональной ссылке (токен + cookie + гео по IP). Отчёт — в `admin.html`.
+Лендинг маскируется под резюме сисадмина/DevOps, а в фоне логирует переходы
+(IP, город, регион, страна, провайдер, браузер, дата, число визитов). Отчёт — в `admin.html`.
 
-> ⚠️ Использовать только с согласия участников/руководства. Публикация имён и email —
+> ⚠️ Использовать только с согласия участников/руководства. IP и геоданные —
 > персональные данные (GDPR / 152-ФЗ). Это инструмент для внутреннего тестирования.
 
 ## Как это работает
 
-1. `generate.html` — из списка `Имя; email; пол` создаёт уникальные токены и ссылки
-   вида `https://imurd.github.io/?id=abc123`, сохраняет получателей в базу.
-2. Ты рассылаешь каждому его персональную ссылку.
-3. При переходе `index.html` показывает резюме, а `tracker.js`:
-   - читает токен из `?id=`, кладёт его в cookie (узнавание при повторных заходах без токена);
-   - определяет страну по IP;
+1. Раздаёшь общую ссылку `https://imurd.github.io/` (либо персональную `?id=токен`, если нужны имена).
+2. При переходе `index.html` показывает резюме, а `tracker.js`:
+   - определяет IP, город, регион, страну, провайдера (по `ipwho.is`, без ключа);
+   - ставит cookie с анонимным ID → узнаёт повторные заходы того же браузера;
    - пишет запись о визите в Supabase.
-4. `admin.html` сводит всё в таблицу: **имя, email, пол, страна, первый/последний переход, число переходов**.
+3. `admin.html` сводит всё в таблицу по порядку: **IP, город, регион, страна, провайдер,
+   первый/последний переход, число переходов** (+ имя/email/пол, если переход был по `?id=`).
 
-## Настройка Supabase (5 минут, бесплатно)
+## Supabase — уже настроено
 
-1. Заведи проект на https://supabase.com → New project.
-2. SQL Editor → выполни:
+Проект `twmktfolrwtynyfeazop` подключён, таблицы (`recipients`, `visits`) и RLS-политики
+созданы, ключи прописаны в `config.js`. Ничего настраивать не нужно.
 
-```sql
-create table recipients (
-  token text primary key,
-  name  text,
-  email text,
-  gender text
-);
-
-create table visits (
-  id bigint generated always as identity primary key,
-  token text,
-  ip text,
-  city text,
-  region text,
-  country text,
-  isp text,
-  user_agent text,
-  referrer text,
-  visited_at timestamptz default now()
-);
-
--- RLS: anon может только вставлять, читать нельзя (читаем в admin по service_role)
-alter table recipients enable row level security;
-alter table visits enable row level security;
-
-create policy anon_insert_recipients on recipients for insert to anon with check (true);
-create policy anon_insert_visits     on visits     for insert to anon with check (true);
-```
-
-3. Settings → API: скопируй **Project URL** и **anon public** ключ в `config.js`.
-   **service_role** ключ никуда не вставляй в код — его вводишь прямо в `admin.html`
-   при просмотре отчёта (хранится только во вкладке браузера).
+Отчёт в `admin.html` открывается через **service_role** ключ (Supabase → Settings → API).
+Он **не хранится в коде** — вводишь его прямо во вкладке при просмотре.
 
 ## Публикация на GitHub Pages
 
-Файлы уже в корне репозитория `imurd.github.io`. Просто:
-
-```
-git add -A && git commit -m "resume landing + tracker" && git push
-```
-
-Через минуту сайт живёт на https://imurd.github.io/.
+Файлы в корне репозитория `imurd.github.io`, деплой автоматический при `git push`.
+Сайт живёт на https://imurd.github.io/.
 
 ## Ограничения (важно понимать)
 
 - Cookie — **first-party**: сайт НЕ читает данные с других сайтов (Google, VK и т.п.).
-  Имя/пол/email берутся из твоего списка по токену, а не «вытаскиваются из браузера».
-- Cookie живёт в одном браузере → без Supabase общую таблицу собрать нельзя.
-- Если человек чистит cookie и заходит без `?id=`, он залогируется как `anon-...`.
+- По общей ссылке имя/email/пол получить нельзя — они появляются только при переходе
+  по персональной ссылке `?id=токен` (токен ты сопоставляешь с человеком сам).
+- Общий отчёт требует Supabase: cookie живёт в одном браузере, посетители не видят данные друг друга.

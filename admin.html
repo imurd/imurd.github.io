@@ -5,102 +5,115 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Отчёт по переходам</title>
 <style>
-  body { font-family:-apple-system,"Segoe UI",Roboto,sans-serif; max-width:1400px; margin:0 auto; padding:24px; background:#0f172a; color:#e2e8f0; }
-  h1 { font-size:22px; } input { padding:10px; border-radius:8px; border:1px solid #334155; background:#1e293b; color:#e2e8f0; width:100%; max-width:520px; }
-  button { margin-left:8px; padding:10px 18px; border:0; border-radius:8px; background:#38bdf8; color:#0f172a; font-weight:600; cursor:pointer; }
-  .scroll { overflow-x:auto; margin-top:20px; }
-  table { border-collapse:collapse; font-size:13px; white-space:nowrap; }
-  th,td { border:1px solid #334155; padding:8px; text-align:left; }
-  th { background:#1e293b; position:sticky; top:0; } tr:nth-child(even) td { background:#16233b; }
-  .muted { color:#94a3b8; font-size:13px; }
-  .flag { color:#f87171; font-weight:600; }
+  :root { --bg:#0f172a; --card:#1e293b; --line:#334155; --accent:#38bdf8; --muted:#94a3b8; }
+  * { box-sizing:border-box; }
+  body { font-family:-apple-system,"Segoe UI",Roboto,sans-serif; max-width:1100px; margin:0 auto; padding:24px; background:var(--bg); color:#e2e8f0; }
+  h1 { font-size:22px; margin:0 0 6px; }
+  .bar { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin:14px 0; }
+  input { padding:10px; border-radius:8px; border:1px solid var(--line); background:var(--card); color:#e2e8f0; flex:1; min-width:260px; }
+  button { padding:10px 18px; border:0; border-radius:8px; background:var(--accent); color:#0f172a; font-weight:600; cursor:pointer; }
+  button.sec { background:var(--line); color:#e2e8f0; }
+  .muted { color:var(--muted); font-size:13px; }
+  .cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(330px,1fr)); gap:14px; margin-top:18px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px; }
+  .card.vpn { border-color:#b45454; }
+  .chead { display:flex; align-items:center; gap:10px; margin-bottom:4px; }
+  .num { color:var(--muted); font-size:13px; }
+  .ip { font-size:17px; font-weight:700; font-family:ui-monospace,monospace; word-break:break-all; }
+  .badges { margin-left:auto; display:flex; gap:6px; flex-shrink:0; }
+  .badge { font-size:12px; padding:3px 9px; border-radius:20px; background:#0f172a; border:1px solid var(--line); }
+  .badge.count { background:var(--accent); color:#0f172a; font-weight:700; border:0; }
+  .badge.flag { background:#7f1d1d; border-color:#b45454; color:#fecaca; font-weight:600; }
+  .who { color:var(--accent); font-weight:600; margin:2px 0 10px; }
+  .kv { display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:13px; }
+  .kv dt { color:var(--muted); }
+  .kv dd { margin:0; text-align:right; word-break:break-word; }
+  .times { margin-top:10px; padding-top:10px; border-top:1px solid var(--line); font-size:12px; color:var(--muted); }
 </style>
 </head>
 <body>
 <h1>Отчёт: кто перешёл по ссылке</h1>
-<p class="muted">Вставь <b>service_role</b> ключ (Settings → API). Он не сохраняется в коде — только в этой вкладке.</p>
-<input id="key" type="password" placeholder="service_role key">
-<button id="load">Показать</button>
-<button id="csv" style="display:none;background:#334155;color:#e2e8f0">Скачать CSV</button>
-
-<div class="scroll">
-<table id="tbl" style="display:none"><thead>
-  <tr><th>#</th><th>Имя</th><th>Email</th><th>Пол</th><th>IP</th><th>VPN?</th><th>Город</th><th>Регион</th><th>Страна</th>
-      <th>Провайдер</th><th>ASN</th><th>Домен</th><th>ОС</th><th>Браузер</th><th>Устройство</th>
-      <th>Экран</th><th>Окно</th><th>Пояс (браузер)</th><th>Пояс (IP)</th><th>Языки</th><th>Ядра</th><th>ОЗУ</th>
-      <th>Сеть</th><th>DNT</th><th>Источник</th><th>Первый</th><th>Последний</th><th>Кол-во</th></tr>
-</thead><tbody></tbody></table>
+<p class="muted">Сгруппировано по IP. Вставь <b>service_role</b> ключ — он не сохраняется в коде, только в этой вкладке.</p>
+<div class="bar">
+  <input id="key" type="password" placeholder="service_role key (начинается на eyJ…)">
+  <button id="load">Показать</button>
+  <button id="csv" class="sec" style="display:none">Скачать CSV</button>
 </div>
-<div class="muted" id="msg" style="margin-top:12px"></div>
+<div class="muted" id="msg"></div>
+<div class="cards" id="cards"></div>
 
 <script src="config.js"></script>
 <script>
-function fmt(ts) { if (!ts) return "—"; var d = new Date(ts); return d.toLocaleString("ru-RU"); }
-function esc(s) { return (s == null ? "—" : String(s)).replace(/[&<>]/g, function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;"}[c];}); }
-var COLS = ["#","name","email","gender","ip","vpn","city","region","country","isp","asn","domain","os","browser","device_type","screen","viewport","timezone","tz_ip","languages","cpu_cores","device_memory","connection","dnt","referrer","first","last","count"];
+function fmt(ts){ if(!ts) return "—"; return new Date(ts).toLocaleString("ru-RU"); }
+function esc(s){ return String(s).replace(/[&<>]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+// поля для блока «ключ-значение» (порядок = порядок показа); пустые пропускаются
+var FIELDS = [
+  ["city","Город"],["region","Регион"],["country","Страна"],
+  ["isp","Провайдер"],["asn","ASN"],["domain","Домен"],
+  ["os","ОС"],["browser","Браузер"],["device_type","Устройство"],
+  ["screen","Экран"],["viewport","Окно"],
+  ["timezone","Пояс (браузер)"],["tz_ip","Пояс (IP)"],
+  ["languages","Языки"],["cpu_cores","Ядра"],["device_memory","ОЗУ, ГБ"],
+  ["connection","Сеть"],["dnt","DNT"],["referrer","Источник"]
+];
+var keep = FIELDS.map(f=>f[0]);
 var lastList = [];
 
-document.getElementById("load").onclick = async function () {
+document.getElementById("load").onclick = async function(){
   var C = window.CONFIG, key = document.getElementById("key").value.trim() || C.SUPABASE_ANON_KEY;
   var msg = document.getElementById("msg"); msg.textContent = "Загрузка...";
-  var h = { "apikey": key, "Authorization": "Bearer " + key };
-  var sel = "token,ip,city,region,country,isp,asn,org,domain,os,browser,device_type,screen,viewport,timezone,tz_ip,languages,cpu_cores,device_memory,connection,dnt,vpn_suspect,referrer,visited_at";
-
+  var h = { "apikey":key, "Authorization":"Bearer "+key };
+  var sel = "token,ip,"+keep.join(",")+",vpn_suspect,visited_at";
   try {
     var [recRes, visRes] = await Promise.all([
-      fetch(C.SUPABASE_URL + "/rest/v1/recipients?select=token,name,email,gender", { headers: h }),
-      fetch(C.SUPABASE_URL + "/rest/v1/visits?select=" + sel + "&order=visited_at.asc", { headers: h })
+      fetch(C.SUPABASE_URL+"/rest/v1/recipients?select=token,name,email,gender",{headers:h}),
+      fetch(C.SUPABASE_URL+"/rest/v1/visits?select="+sel+"&order=visited_at.asc",{headers:h})
     ]);
     var recipients = await recRes.json(), visits = await visRes.json();
-    if (!Array.isArray(visits)) { msg.textContent = "Ошибка доступа (нужен service_role ключ): " + JSON.stringify(visits); return; }
-    // токен -> получатель (для имени, если переход был по персональной ссылке)
-    var recMap = {};
-    recipients.forEach(r => recMap[r.token] = r);
+    if(!Array.isArray(visits)){ msg.textContent = "Нужен service_role ключ. Ответ: "+JSON.stringify(visits); return; }
+    var recMap = {}; recipients.forEach(r=>recMap[r.token]=r);
 
-    var keep = ["ip","city","region","country","isp","asn","domain","os","browser","device_type","screen","viewport","timezone","tz_ip","languages","cpu_cores","device_memory","connection","dnt","referrer"];
-    // ГРУППИРОВКА ПО IP: один IP = одна строка, count = число визитов
     var byIp = {};
-    visits.forEach(v => {
-      var groupKey = v.ip || v.token || "unknown";
-      var row = byIp[groupKey] || (byIp[groupKey] = { name: "(аноним)", email: "—", gender: "—", count: 0 });
+    visits.forEach(v=>{
+      var k = v.ip || v.token || "unknown";
+      var row = byIp[k] || (byIp[k]={ ip:v.ip||"(без IP)", count:0 });
       row.count++;
-      if (!row.first) row.first = v.visited_at;
+      if(!row.first) row.first = v.visited_at;
       row.last = v.visited_at;
-      keep.forEach(k => { if (v[k] != null && v[k] !== "") row[k] = v[k]; });
-      if (v.vpn_suspect) row.vpn = "ДА";
+      keep.forEach(f=>{ if(v[f]!=null && v[f]!=="") row[f]=v[f]; });
+      if(v.vpn_suspect) row.vpn = true;
       var rec = recMap[v.token];
-      if (rec) { row.name = rec.name; row.email = rec.email; row.gender = rec.gender; }
+      if(rec){ row.name=rec.name; row.email=rec.email; row.gender=rec.gender; }
     });
+    lastList = Object.values(byIp).sort((a,b)=>new Date(a.first)-new Date(b.first));
 
-    lastList = Object.values(byIp).filter(r => r.count > 0)
-      .sort((a, b) => new Date(a.first) - new Date(b.first));
-
-    var tbody = document.querySelector("#tbl tbody"); tbody.innerHTML = "";
-    lastList.forEach((r, i) => {
-      var tr = document.createElement("tr");
-      var vpnCell = r.vpn ? "<span class='flag'>ДА</span>" : "—";
-      tr.innerHTML =
-        "<td>" + (i + 1) + "</td><td>" + esc(r.name) + "</td><td>" + esc(r.email) + "</td><td>" + esc(r.gender) +
-        "</td><td>" + esc(r.ip) + "</td><td>" + vpnCell + "</td><td>" + esc(r.city) + "</td><td>" + esc(r.region) +
-        "</td><td>" + esc(r.country) + "</td><td>" + esc(r.isp) + "</td><td>" + esc(r.asn) + "</td><td>" + esc(r.domain) +
-        "</td><td>" + esc(r.os) + "</td><td>" + esc(r.browser) + "</td><td>" + esc(r.device_type) +
-        "</td><td>" + esc(r.screen) + "</td><td>" + esc(r.viewport) + "</td><td>" + esc(r.timezone) + "</td><td>" + esc(r.tz_ip) +
-        "</td><td>" + esc(r.languages) + "</td><td>" + esc(r.cpu_cores) + "</td><td>" + esc(r.device_memory) +
-        "</td><td>" + esc(r.connection) + "</td><td>" + esc(r.dnt) + "</td><td>" + esc(r.referrer) +
-        "</td><td>" + fmt(r.first) + "</td><td>" + fmt(r.last) + "</td><td>" + r.count + "</td>";
-      tbody.appendChild(tr);
+    var box = document.getElementById("cards"); box.innerHTML = "";
+    lastList.forEach((r,i)=>{
+      var rows = FIELDS.filter(f=>r[f[0]]!=null && r[f[0]]!=="")
+        .map(f=>"<dt>"+f[1]+"</dt><dd>"+esc(r[f[0]])+"</dd>").join("");
+      var who = r.name ? "<div class='who'>"+esc(r.name)+(r.email?" · "+esc(r.email):"")+(r.gender?" · "+esc(r.gender):"")+"</div>" : "";
+      var badges = "<span class='badge count'>"+r.count+" перех.</span>"+(r.vpn?"<span class='badge flag'>VPN?</span>":"");
+      var el = document.createElement("div");
+      el.className = "card"+(r.vpn?" vpn":"");
+      el.innerHTML =
+        "<div class='chead'><span class='num'>#"+(i+1)+"</span><span class='ip'>"+esc(r.ip)+"</span>"+
+        "<span class='badges'>"+badges+"</span></div>"+
+        who + "<dl class='kv'>"+rows+"</dl>"+
+        "<div class='times'>Первый: "+fmt(r.first)+"<br>Последний: "+fmt(r.last)+"</div>";
+      box.appendChild(el);
     });
-    document.getElementById("tbl").style.display = "table";
     document.getElementById("csv").style.display = "inline-block";
-    msg.textContent = "Всего перешедших: " + lastList.length;
-  } catch (e) { msg.textContent = "Ошибка: " + e; }
+    msg.textContent = "Уникальных IP: "+lastList.length+" · всего переходов: "+visits.length;
+  } catch(e){ msg.textContent = "Ошибка: "+e; }
 };
 
-document.getElementById("csv").onclick = function () {
-  var head = ["#","Имя","Email","Пол","IP","VPN","Город","Регион","Страна","Провайдер","ASN","Домен","ОС","Браузер","Устройство","Экран","Окно","Пояс(браузер)","Пояс(IP)","Языки","Ядра","ОЗУ","Сеть","DNT","Источник","Первый","Последний","Кол-во"];
-  var rows = lastList.map((r, i) => [i+1, r.name, r.email, r.gender, r.ip, r.vpn||"", r.city, r.region, r.country, r.isp, r.asn, r.domain, r.os, r.browser, r.device_type, r.screen, r.viewport, r.timezone, r.tz_ip, r.languages, r.cpu_cores, r.device_memory, r.connection, r.dnt, r.referrer, r.first, r.last, r.count]);
-  var csv = [head].concat(rows).map(row => row.map(c => '"' + String(c==null?"":c).replace(/"/g,'""') + '"').join(",")).join("\r\n");
-  var blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8" });
+document.getElementById("csv").onclick = function(){
+  var head = ["#","IP","Имя","Email","Пол","VPN"].concat(FIELDS.map(f=>f[1])).concat(["Первый","Последний","Кол-во"]);
+  var rows = lastList.map((r,i)=>[i+1,r.ip,r.name||"",r.email||"",r.gender||"",r.vpn?"ДА":""]
+    .concat(FIELDS.map(f=>r[f[0]]==null?"":r[f[0]])).concat([r.first,r.last,r.count]));
+  var csv = [head].concat(rows).map(row=>row.map(c=>'"'+String(c==null?"":c).replace(/"/g,'""')+'"').join(",")).join("\r\n");
+  var blob = new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"});
   var a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "visits.csv"; a.click();
 };
 </script>

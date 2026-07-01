@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Отчёт по переходам</title>
+<style>
+  body { font-family:-apple-system,"Segoe UI",Roboto,sans-serif; max-width:1000px; margin:0 auto; padding:24px; background:#0f172a; color:#e2e8f0; }
+  h1 { font-size:22px; } input { padding:10px; border-radius:8px; border:1px solid #334155; background:#1e293b; color:#e2e8f0; width:100%; max-width:520px; }
+  button { margin-left:8px; padding:10px 18px; border:0; border-radius:8px; background:#38bdf8; color:#0f172a; font-weight:600; cursor:pointer; }
+  table { width:100%; border-collapse:collapse; margin-top:20px; font-size:14px; }
+  th,td { border:1px solid #334155; padding:9px; text-align:left; }
+  th { background:#1e293b; } tr:nth-child(even) td { background:#16233b; }
+  .muted { color:#94a3b8; font-size:13px; }
+</style>
+</head>
+<body>
+<h1>Отчёт: кто перешёл по ссылке</h1>
+<p class="muted">Вставь <b>service_role</b> ключ (Settings → API). Он не сохраняется в коде — только в этой вкладке.</p>
+<input id="key" type="password" placeholder="service_role key">
+<button id="load">Показать</button>
+
+<table id="tbl" style="display:none"><thead>
+  <tr><th>#</th><th>Имя</th><th>Email</th><th>Пол</th><th>Страна</th><th>Первый переход</th><th>Последний переход</th><th>Кол-во переходов</th></tr>
+</thead><tbody></tbody></table>
+<div class="muted" id="msg" style="margin-top:12px"></div>
+
+<script src="config.js"></script>
+<script>
+function fmt(ts) { if (!ts) return "—"; var d = new Date(ts); return d.toLocaleString("ru-RU"); }
+
+document.getElementById("load").onclick = async function () {
+  var C = window.CONFIG, key = document.getElementById("key").value.trim() || C.SUPABASE_ANON_KEY;
+  var msg = document.getElementById("msg"); msg.textContent = "Загрузка...";
+  var h = { "apikey": key, "Authorization": "Bearer " + key };
+
+  try {
+    var [recRes, visRes] = await Promise.all([
+      fetch(C.SUPABASE_URL + "/rest/v1/recipients?select=token,name,email,gender", { headers: h }),
+      fetch(C.SUPABASE_URL + "/rest/v1/visits?select=token,country,visited_at&order=visited_at.asc", { headers: h })
+    ]);
+    var recipients = await recRes.json(), visits = await visRes.json();
+    var byToken = {};
+    recipients.forEach(r => byToken[r.token] = { name: r.name, email: r.email, gender: r.gender, count: 0 });
+
+    visits.forEach(v => {
+      var row = byToken[v.token] || (byToken[v.token] = { name: "(неизвестный)", email: "—", gender: "—", count: 0 });
+      row.count++;
+      if (!row.first) row.first = v.visited_at;
+      row.last = v.visited_at;
+      if (v.country) row.country = v.country;
+    });
+
+    // только те, кто реально переходил, сортировка по первому переходу
+    var list = Object.values(byToken).filter(r => r.count > 0)
+      .sort((a, b) => new Date(a.first) - new Date(b.first));
+
+    var tbody = document.querySelector("#tbl tbody"); tbody.innerHTML = "";
+    list.forEach((r, i) => {
+      var tr = document.createElement("tr");
+      tr.innerHTML = "<td>" + (i + 1) + "</td><td>" + r.name + "</td><td>" + r.email +
+        "</td><td>" + r.gender + "</td><td>" + (r.country || "—") + "</td><td>" + fmt(r.first) +
+        "</td><td>" + fmt(r.last) + "</td><td>" + r.count + "</td>";
+      tbody.appendChild(tr);
+    });
+    document.getElementById("tbl").style.display = "table";
+    msg.textContent = "Всего перешедших: " + list.length;
+  } catch (e) { msg.textContent = "Ошибка: " + e; }
+};
+</script>
+</body>
+</html>

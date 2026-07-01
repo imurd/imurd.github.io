@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Генератор ссылок</title>
+<style>
+  body { font-family:-apple-system,"Segoe UI",Roboto,sans-serif; max-width:900px; margin:0 auto; padding:24px; background:#0f172a; color:#e2e8f0; }
+  h1 { font-size:22px; } label { display:block; margin:14px 0 6px; color:#94a3b8; }
+  textarea, input { width:100%; padding:10px; border-radius:8px; border:1px solid #334155; background:#1e293b; color:#e2e8f0; font-size:14px; }
+  textarea { min-height:140px; font-family:monospace; }
+  button { margin-top:14px; padding:10px 20px; border:0; border-radius:8px; background:#38bdf8; color:#0f172a; font-weight:600; cursor:pointer; }
+  table { width:100%; border-collapse:collapse; margin-top:20px; font-size:13px; }
+  th,td { border:1px solid #334155; padding:8px; text-align:left; }
+  th { background:#1e293b; } .status { margin-top:10px; color:#94a3b8; }
+  code { background:#1e293b; padding:2px 6px; border-radius:4px; }
+</style>
+</head>
+<body>
+<h1>Генератор ссылок для рассылки</h1>
+<p style="color:#94a3b8">Каждая строка: <code>Имя Фамилия; email; пол</code> (пол: м / ж). Пример:<br>
+<code>Иван Иванов; mr.ivanowww@mail.ru; м</code></p>
+
+<label>Базовый URL сайта</label>
+<input id="base" value="https://imurd.github.io/">
+
+<label>Список получателей</label>
+<textarea id="list" placeholder="Иван Иванов; mr.ivanowww@mail.ru; м&#10;Мария Петрова; maria@example.com; ж"></textarea>
+
+<button id="go">Сгенерировать и сохранить в базу</button>
+<div class="status" id="status"></div>
+<table id="out" style="display:none"><thead>
+  <tr><th>Имя</th><th>Email</th><th>Пол</th><th>Токен</th><th>Ссылка</th></tr>
+</thead><tbody></tbody></table>
+
+<script src="config.js"></script>
+<script>
+function token() { return Math.random().toString(36).slice(2, 8) + Math.random().toString(36).slice(2, 6); }
+
+document.getElementById("go").onclick = async function () {
+  var C = window.CONFIG, base = document.getElementById("base").value.replace(/\/?$/, "/");
+  var lines = document.getElementById("list").value.split("\n").map(s => s.trim()).filter(Boolean);
+  var status = document.getElementById("status"), tbody = document.querySelector("#out tbody");
+  tbody.innerHTML = ""; status.textContent = "Обработка...";
+  var rows = [];
+
+  for (var line of lines) {
+    var parts = line.split(";").map(s => s.trim());
+    if (parts.length < 3) continue;
+    rows.push({ token: token(), name: parts[0], email: parts[1], gender: parts[2] });
+  }
+
+  // сохраняем получателей в Supabase
+  try {
+    await fetch(C.SUPABASE_URL + "/rest/v1/recipients", {
+      method: "POST",
+      headers: { "apikey": C.SUPABASE_ANON_KEY, "Authorization": "Bearer " + C.SUPABASE_ANON_KEY,
+                 "Content-Type": "application/json", "Prefer": "return=minimal" },
+      body: JSON.stringify(rows)
+    });
+    status.textContent = "Сохранено получателей: " + rows.length;
+  } catch (e) { status.textContent = "Ошибка сохранения: " + e; }
+
+  document.getElementById("out").style.display = "table";
+  for (var r of rows) {
+    var link = base + "?id=" + r.token;
+    var tr = document.createElement("tr");
+    tr.innerHTML = "<td>" + r.name + "</td><td>" + r.email + "</td><td>" + r.gender +
+      "</td><td>" + r.token + "</td><td><a href='" + link + "' style='color:#38bdf8'>" + link + "</a></td>";
+    tbody.appendChild(tr);
+  }
+};
+</script>
+</body>
+</html>

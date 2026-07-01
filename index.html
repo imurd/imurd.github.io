@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Резюме — Системный администратор / DevOps</title>
+<style>
+  :root { --bg:#0f172a; --card:#1e293b; --accent:#38bdf8; --text:#e2e8f0; --muted:#94a3b8; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+         background:var(--bg); color:var(--text); line-height:1.6; }
+  .wrap { max-width: 860px; margin:0 auto; padding: 40px 24px; }
+  header { display:flex; gap:24px; align-items:center; flex-wrap:wrap; margin-bottom:32px; }
+  .avatar { width:96px; height:96px; border-radius:50%; background:linear-gradient(135deg,#38bdf8,#818cf8);
+            display:flex; align-items:center; justify-content:center; font-size:36px; font-weight:700; color:#0f172a; }
+  h1 { margin:0 0 4px; font-size:28px; }
+  .title { color:var(--accent); font-weight:600; }
+  .contacts { color:var(--muted); font-size:14px; margin-top:6px; }
+  .card { background:var(--card); border-radius:12px; padding:24px; margin-bottom:20px; }
+  h2 { font-size:16px; text-transform:uppercase; letter-spacing:1px; color:var(--accent); margin:0 0 14px; }
+  .job { margin-bottom:18px; }
+  .job:last-child { margin-bottom:0; }
+  .job .role { font-weight:600; }
+  .job .period { color:var(--muted); font-size:13px; }
+  ul { margin:8px 0 0; padding-left:18px; }
+  .skills { display:flex; flex-wrap:wrap; gap:8px; }
+  .skill { background:#0f172a; border:1px solid #334155; padding:5px 12px; border-radius:20px; font-size:13px; }
+  footer { text-align:center; color:var(--muted); font-size:12px; margin-top:24px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="avatar">ДА</div>
+    <div>
+      <h1>Друми Анатолий Игоревич</h1>
+      <div class="title">Системный администратор / DevOps-инженер</div>
+      <div class="contacts">Кишинёв · mr.ivanowww@mail.ru · +373 61 028 004</div>
+    </div>
+  </header>
+
+  <div class="card">
+    <h2>О себе</h2>
+    <p>Более 8 лет опыта в администрировании Linux/Windows-инфраструктур, автоматизации
+    развёртывания и построении CI/CD. Отвечаю за отказоустойчивость, мониторинг и безопасность
+    продакшн-систем. Спокойно чувствую себя как в bare-metal, так и в облаке.</p>
+  </div>
+
+  <div class="card">
+    <h2>Опыт работы</h2>
+    <div class="job">
+      <div class="role">Системный администратор / DevOps-инженер — Allied Testing</div>
+      <div class="period">2018 — н.в.</div>
+      <ul>
+        <li>Миграция сервисов в Kubernetes, сокращение времени релиза с 2 часов до 12 минут.</li>
+        <li>Внедрение GitOps (ArgoCD) и Infrastructure-as-Code на Terraform.</li>
+        <li>Построение observability-стека: Prometheus, Grafana, Loki, alerting.</li>
+        <li>Администрирование Linux/Windows-инфраструктуры, резервное копирование, аудит безопасности.</li>
+        <li>Автоматизация рутинных задач на Bash/Python/Ansible.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Навыки</h2>
+    <div class="skills">
+      <span class="skill">Linux</span><span class="skill">Docker</span><span class="skill">Kubernetes</span>
+      <span class="skill">Terraform</span><span class="skill">Ansible</span><span class="skill">CI/CD</span>
+      <span class="skill">Prometheus</span><span class="skill">Grafana</span><span class="skill">Nginx</span>
+      <span class="skill">PostgreSQL</span><span class="skill">Bash</span><span class="skill">Python</span>
+      <span class="skill">AWS</span><span class="skill">GitLab</span>
+    </div>
+  </div>
+
+  <footer>Резюме обновлено в 2026 году · PDF-версия доступна по запросу</footer>
+</div>
+
+<script src="config.js"></script>
+<script src="tracker.js"></script>
+</body>
+</html>
